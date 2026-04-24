@@ -11,7 +11,7 @@
 
 #define PLAYER_TURN_SPEED 0.0025
 #define PLAYER_MOVE_SPEED 0.005
-#define PLAYER_STRAFE_SPEED 0.0025
+#define PLAYER_STRAFE_SPEED 0.005
 
 #include "vector.h"
 #include "render.h"

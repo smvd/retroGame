@@ -13,10 +13,21 @@ void MAIN_PollInput() {}
 #else
 #include <raylib.h>
 
+Texture2D enemy;
+RenderTexture2D screenA;
+RenderTexture2D screenB;
+
 uint8_t activePlayer = 0;
 
 void MAIN_InitVideo() {
     InitWindow(RENDER_FRAME_WIDTH*4, RENDER_FRAME_HEIGHT*2, "retro shiz");
+    
+    Image image = LoadImage("bitmap.png");
+    enemy = LoadTextureFromImage(image);
+    UnloadImage(image);
+    
+    screenA = LoadRenderTexture(640, 360);
+    screenB = LoadRenderTexture(640, 360);
 }
 
 void MAIN_CloseVideo() {
@@ -24,16 +35,52 @@ void MAIN_CloseVideo() {
 }
 
 void MAIN_UpdateFrame(struct _Frame * frameA, struct _Frame * frameB) {
-    BeginDrawing();
+    BeginTextureMode(screenA);
     ClearBackground(BLACK);
     
     for (uint16_t x = 0; x < RENDER_FRAME_WIDTH; x += 1) {
-        DrawRectangle(x*2, RENDER_FRAME_HEIGHT / 2 - frameA->wallBuffer[x], 2, frameA->wallBuffer[x]*4, (Color){frameA->wallBuffer[x], frameA->wallBuffer[x], frameA->wallBuffer[x], 255});
-        DrawRectangle(x*2 + RENDER_FRAME_WIDTH*2, RENDER_FRAME_HEIGHT / 2 - frameB->wallBuffer[x], 2, frameB->wallBuffer[x]*4, (Color){frameB->wallBuffer[x], frameB->wallBuffer[x], frameB->wallBuffer[x], 255});
+        DrawRectangle(x, RENDER_FRAME_HEIGHT / 2 - frameA->wallBuffer[x], 1, frameA->wallBuffer[x] * 2, (Color){frameA->wallBuffer[x], frameA->wallBuffer[x], frameA->wallBuffer[x], 255});
     }
+    
+    for (uint8_t i = 0; i < frameA->spriteCount; i += 1) {
+        DrawTexture(enemy, frameA->sprites[i].x, frameA->sprites[i].y, WHITE);
+    }
+    EndTextureMode();
+    
+    BeginTextureMode(screenB);
+    ClearBackground(BLACK);
+    
+    for (uint16_t x = 0; x < RENDER_FRAME_WIDTH; x += 1) {
+        DrawRectangle(x, RENDER_FRAME_HEIGHT / 2 - frameB->wallBuffer[x], 1, frameB->wallBuffer[x] * 2, (Color){frameB->wallBuffer[x], frameB->wallBuffer[x], frameB->wallBuffer[x], 255});
+    }
+    
+    for (uint8_t i = 0; i < frameB->spriteCount; i += 1) {
+        DrawTexture(enemy, frameB->sprites[i].x, frameB->sprites[i].y, WHITE);
+    }
+    EndTextureMode();
 
+    BeginDrawing();
+    ClearBackground(BLACK);
+    
+    DrawTexturePro(
+        screenA.texture,
+        (Rectangle){ 0, 0, 640, -360 },   // flipped Y
+        (Rectangle){ 0, 0, RENDER_FRAME_WIDTH*2, RENDER_FRAME_HEIGHT*2},
+        (Vector2){ 0, 0 },
+        0.0f,
+        WHITE
+    );
+    DrawTexturePro(
+        screenB.texture,
+        (Rectangle){0, 0, 640, -360 },   // flipped Y
+        (Rectangle){RENDER_FRAME_WIDTH*2, 0, RENDER_FRAME_WIDTH*2, RENDER_FRAME_HEIGHT*2},
+        (Vector2){0, 0},
+        0.0f,
+        WHITE
+    );
     EndDrawing();
 }
+
 void MAIN_PollInput(struct _Player * playerA, struct _Player * playerB) {
     if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_LEFT)) {
         activePlayer = !activePlayer;

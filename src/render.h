@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #define RENDER_FRAME_WIDTH 640
 #define RENDER_FRAME_HEIGHT 360
@@ -29,5 +30,8 @@ struct _Frame {
 };
 
 void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _World * world, struct _Frame * frame);
+uint16_t RENDER_GetScreenSpacePosition(struct _Player * player, struct _Vector camera, struct _Vector object);
+float RENDER_CastRay(struct _Vector source, struct _Vector ray, struct _World * world, float maxDistance);
+float RENDER_GetDistance(struct _Vector a, struct _Vector b);
 
 #endif
