@@ -4,15 +4,30 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "vector.h"
-#include "world.h"
-
 #define RENDER_FRAME_WIDTH 640
 #define RENDER_FRAME_HEIGHT 360
 
-extern uint8_t frame[RENDER_FRAME_WIDTH];
+#define RENDER_SPRITE_LIMIT 128
 
-void RENDER_Reset();
-void RENDER_DrawFrame();
+#include "vector.h"
+#include "world.h"
+#include "player.h"
+
+struct _Player;
+
+struct _Sprite {
+    uint16_t x;
+    uint16_t y;
+    uint8_t index;
+    uint8_t size;
+};
+
+struct _Frame {
+    uint8_t wallBuffer[RENDER_FRAME_WIDTH];
+    struct _Sprite sprites[RENDER_SPRITE_LIMIT];
+    uint8_t spriteCount;
+};
+
+void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _World * world, struct _Frame * frame);
 
 #endif
