@@ -1,5 +1,4 @@
 #include <stdint.h>
-#include <raylib.h>
 
 #include "render.h"
 
@@ -10,6 +9,8 @@ void MAIN_CloseVideo() {}
 void MAIN_UpdateFrame() {}
 void MAIN_PollInput() {}
 #else
+#include <raylib.h>
+
 void MAIN_InitVideo() {
     InitWindow(RENDER_FRAME_WIDTH*2, RENDER_FRAME_HEIGHT*2, "retro shiz");
 }
@@ -23,8 +24,7 @@ void MAIN_UpdateFrame() {
     ClearBackground(BLACK);
     
     for (uint16_t x = 0; x < RENDER_FRAME_WIDTH; x += 1) {
-        DrawRectangle(x*2, (RENDER_FRAME_HEIGHT*0.5 + frame[x]) * 2, 2, 2, WHITE);
-        DrawRectangle(x*2, (RENDER_FRAME_HEIGHT*0.5 - frame[x]) * 2, 2, 2, WHITE);
+        DrawRectangle(x*2, RENDER_FRAME_HEIGHT / 2 - frame[x], 2, frame[x]*4, (Color){frame[x], frame[x], frame[x], 255});
     }
     
     EndDrawing();
@@ -58,3 +58,10 @@ int main() {
 
     return 0;
 }
+
+// main
+//      system specific driver code
+// render
+//      uses the world to fill out a given frame
+// world
+//      handles all the world info like the camera, player, map, enemies, movement, etc

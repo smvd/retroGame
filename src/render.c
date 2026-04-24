@@ -4,66 +4,76 @@ uint8_t frame[RENDER_FRAME_WIDTH];
 
 void RENDER_DrawFrame() {
     for (uint16_t x = 0; x < 640; x += 1) {
-        fx32_t cameraX = DIV(TO_FX(2*x), TO_FX(RENDER_FRAME_WIDTH)) - TO_FX(1);
-    
-        struct _FX_Vector ray;
+        // Find the x point for the ray in screen space
+        float cameraSpaceX = 2 * x / (float)(RENDER_FRAME_WIDTH) - 1;
         
-        ray.x = direction.x + MUL(camera.x, cameraX);
-        ray.y = direction.y + MUL(camera.y, cameraX);
+        // Compute the vector for the ray
+        struct _Vector ray;
+        ray.x = direction.x + camera.x * cameraSpaceX;
+        ray.y = direction.y + camera.y * cameraSpaceX;
         
-        struct _FX_Vector delta;
-        delta.x = (ray.x == 0) ? TO_FX(999999) : ABS(DIV(TO_FX(1), ray.x));
-        delta.y = (ray.y == 0) ? TO_FX(999999) : ABS(DIV(TO_FX(1), ray.y));
-
-        struct _Vector map;
-        map.x = FROM_FX(player.x);
-        map.y = FROM_FX(player.y);
-
-        struct _FX_Vector step;
-        struct _FX_Vector distance;
+        // Distance for the ray to travel
+        struct _Vector deltaDistance;
+        deltaDistance.x = fabs(1 / ray.x);
+        deltaDistance.y = fabs(1 / ray.y);
         
+        // What direction the ray is pointing
+        struct _Vector stepDirection;
+        
+        // The distance to move along the ray for a step to the next tile
+        struct _Vector sideDistance;
+        
+        // The player position on the map
+        uint8_t mapPositionX = (uint8_t)(player.x);
+        uint8_t mapPositionY = (uint8_t)(player.y);
+        
+        // TODO no fucking clue
         if (ray.x < 0) {
-            step.x = -1;
-            distance.x = MUL((player.x - TO_FX(map.x)), delta.x);
+          stepDirection.x = -1;
+          sideDistance.x = (player.x - mapPositionX) * deltaDistance.x;
         } else {
-            step.x = 1;
-            distance.x = MUL((TO_FX(map.x+1) - player.x), delta.x);
+          stepDirection.x = 1;
+          sideDistance.x = (mapPositionX + 1.0 - player.x) * deltaDistance.x;
         }
         
         if (ray.y < 0) {
-            step.y = -1;
-            distance.y = MUL((player.y - TO_FX(map.y)), delta.y);
+          stepDirection.y = -1;
+          sideDistance.y = (player.y - mapPositionY) * deltaDistance.y;
         } else {
-            step.y = 1;
-            distance.y = MUL((TO_FX(map.y+1) - player.y), delta.y);
+          stepDirection.y = 1;
+          sideDistance.y = (mapPositionY + 1.0 - player.y) * deltaDistance.y;
         }
         
+        // The side of the tile we hit (NE/SW)
         uint8_t side;
         
+        // Take step after step untill we end up in a tile which is marked as a wall
         while (1) {
-            if (distance.x < distance.y) {
-                distance.x += delta.x;
-                map.x += step.x;
+            if (sideDistance.x < sideDistance.y) {
+                sideDistance.x += deltaDistance.x;
+                mapPositionX += stepDirection.x;
                 side = 0;
             } else {
-                distance.y += delta.y;
-                map.y += step.y;
+                sideDistance.y += deltaDistance.y;
+                mapPositionY += stepDirection.y;
                 side = 1;
             }
-        
-            if (world[map.y][map.x] != 0) {
+
+            if (world[mapPositionY][mapPositionX] > 0) {
                 break;
             }
         }
         
-        fx32_t trueDistance;
-        
+        // Depending on the side of the wall we hit we need to compute the distance differently
+        float distance = 0;
         if (side == 0) {
-            trueDistance = distance.x - delta.x;
+            distance = sideDistance.x - deltaDistance.x;
         } else {
-            trueDistance = distance.y - delta.y;
+            distance = sideDistance.y - deltaDistance.y;
         }
         
-        frame[x] = 320 / FROM_FX(trueDistance);
+        if (distance < 0.75f)
+            distance = 0.75f;
+        frame[x] = (RENDER_FRAME_HEIGHT * 0.5)/distance;
     }
 }

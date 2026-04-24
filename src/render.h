@@ -2,8 +2,9 @@
 #define INCLUDED_RENDER_HEADER
 
 #include <stdint.h>
+#include <stdlib.h>
 
-#include "fx.h"
+#include "vector.h"
 #include "world.h"
 
 #define RENDER_FRAME_WIDTH 640

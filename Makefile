@@ -1,7 +1,7 @@
 SRCS := $(shell find src/ -type f -name '*.c')
 OBJS := $(SRCS:src/%.c=bin/%.o)
 
-FLAGS  := -Wall -Wextra -lraylib
+FLAGS  := -Wall -Wextra -lraylib -lm
 
 default: run
 
