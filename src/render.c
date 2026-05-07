@@ -27,29 +27,39 @@ void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _W
     
     frame->spriteCount = 0;
     
-    struct _Vector enemyDirection;
-    
-    enemyDirection.x = enemy->position.x - player->position.x;
-    enemyDirection.y = enemy->position.y - player->position.y;
-    
-    float len = sqrtf(enemyDirection.x * enemyDirection.x + enemyDirection.y * enemyDirection.y);
-    
-    enemyDirection.x /= len;
-    enemyDirection.y /= len;
-    
-    float directDistance = RENDER_GetDistance(player->position, enemy->position);
-    float obstacleDistance = RENDER_CastRay(player->position, enemyDirection, world, directDistance+1.0f);
-    printf("%f %f\n", directDistance, obstacleDistance);
-    
-    if (obstacleDistance >= directDistance) {
+    if (player->enemyVisible) {
         uint16_t enemyPosition = RENDER_GetScreenSpacePosition(player, camera, enemy->position);
         if (enemyPosition < RENDER_FRAME_WIDTH) {
             frame->sprites[frame->spriteCount].x = enemyPosition;
             frame->sprites[frame->spriteCount].y = RENDER_FRAME_HEIGHT/2;
-            frame->sprites[frame->spriteCount].index = 1;
-            frame->sprites[frame->spriteCount].size = 1;
+            frame->sprites[frame->spriteCount].size = RENDER_MAX_SCALE - floor(log2(player->enemyDistance));
+            if (enemy->hit) {frame->sprites[frame->spriteCount].index = 3;}
+            else {frame->sprites[frame->spriteCount].index = 2;}
             frame->spriteCount += 1;
         }
+    }
+    
+    if (player->shooting) {
+        frame->sprites[frame->spriteCount].x = RENDER_FRAME_WIDTH/2;
+        frame->sprites[frame->spriteCount].y = RENDER_FRAME_HEIGHT - 64;
+        frame->sprites[frame->spriteCount].size = 2;
+        frame->sprites[frame->spriteCount].index = 1;
+        frame->spriteCount += 1;
+    }
+    
+    frame->sprites[frame->spriteCount].x = RENDER_FRAME_WIDTH/2;
+    frame->sprites[frame->spriteCount].y = RENDER_FRAME_HEIGHT - 32;
+    frame->sprites[frame->spriteCount].size = 1;
+    frame->sprites[frame->spriteCount].index = 0;
+    frame->spriteCount += 1;
+    
+    // sprites get recentered for a 64x64 so for a smaller sprite i need to revert the offset
+    for (uint8_t i = 0; i < player->health; i += 1) {
+        frame->sprites[frame->spriteCount].x = 34 + i * 18;
+        frame->sprites[frame->spriteCount].y = 34;
+        frame->sprites[frame->spriteCount].size = 1;
+        frame->sprites[frame->spriteCount].index = 4;
+        frame->spriteCount += 1;
     }
 }
 

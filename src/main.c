@@ -13,7 +13,7 @@ void MAIN_PollInput() {}
 #else
 #include <raylib.h>
 
-Texture2D enemy;
+Texture2D textures[32];
 RenderTexture2D screenA;
 RenderTexture2D screenB;
 
@@ -22,8 +22,24 @@ uint8_t activePlayer = 0;
 void MAIN_InitVideo() {
     InitWindow(RENDER_FRAME_WIDTH*4, RENDER_FRAME_HEIGHT*2, "retro shiz");
     
-    Image image = LoadImage("bitmap.png");
-    enemy = LoadTextureFromImage(image);
+    Image image = LoadImage("gun.png");
+    textures[0] = LoadTextureFromImage(image);
+    UnloadImage(image);
+
+    image = LoadImage("flash.png");
+    textures[1] = LoadTextureFromImage(image);
+    UnloadImage(image);
+        
+    image = LoadImage("enemy.png");
+    textures[2] = LoadTextureFromImage(image);
+    UnloadImage(image);
+    
+    image = LoadImage("enemyHit.png");
+    textures[3] = LoadTextureFromImage(image);
+    UnloadImage(image);
+    
+    image = LoadImage("health.png");
+    textures[4] = LoadTextureFromImage(image);
     UnloadImage(image);
     
     screenA = LoadRenderTexture(640, 360);
@@ -43,7 +59,8 @@ void MAIN_UpdateFrame(struct _Frame * frameA, struct _Frame * frameB) {
     }
     
     for (uint8_t i = 0; i < frameA->spriteCount; i += 1) {
-        DrawTexture(enemy, frameA->sprites[i].x, frameA->sprites[i].y, WHITE);
+        uint16_t spriteCenterOffset = (64 * frameA->sprites[i].size) / 2;
+        DrawTextureEx(textures[frameA->sprites[i].index], (Vector2){frameA->sprites[i].x - spriteCenterOffset, frameA->sprites[i].y - spriteCenterOffset},  0.0f, (float)frameA->sprites[i].size, WHITE);
     }
     EndTextureMode();
     
@@ -55,17 +72,17 @@ void MAIN_UpdateFrame(struct _Frame * frameA, struct _Frame * frameB) {
     }
     
     for (uint8_t i = 0; i < frameB->spriteCount; i += 1) {
-        DrawTexture(enemy, frameB->sprites[i].x, frameB->sprites[i].y, WHITE);
+        uint16_t spriteCenterOffset = (64 * frameB->sprites[i].size) / 2;
+        DrawTextureEx(textures[frameB->sprites[i].index], (Vector2){frameB->sprites[i].x - spriteCenterOffset, frameB->sprites[i].y - spriteCenterOffset},  0.0f, (float)frameB->sprites[i].size, WHITE);
     }
     EndTextureMode();
 
     BeginDrawing();
     ClearBackground(BLACK);
-    
     DrawTexturePro(
         screenA.texture,
         (Rectangle){ 0, 0, 640, -360 },   // flipped Y
-        (Rectangle){ 0, 0, RENDER_FRAME_WIDTH*2, RENDER_FRAME_HEIGHT*2},
+        (Rectangle){ 0, 0, RENDER_FRAME_WIDTH * 2, RENDER_FRAME_HEIGHT * 2},
         (Vector2){ 0, 0 },
         0.0f,
         WHITE
@@ -73,7 +90,7 @@ void MAIN_UpdateFrame(struct _Frame * frameA, struct _Frame * frameB) {
     DrawTexturePro(
         screenB.texture,
         (Rectangle){0, 0, 640, -360 },   // flipped Y
-        (Rectangle){RENDER_FRAME_WIDTH*2, 0, RENDER_FRAME_WIDTH*2, RENDER_FRAME_HEIGHT*2},
+        (Rectangle){RENDER_FRAME_WIDTH * 2, 0, RENDER_FRAME_WIDTH * 2, RENDER_FRAME_HEIGHT * 2},
         (Vector2){0, 0},
         0.0f,
         WHITE
@@ -132,8 +149,8 @@ int main() {
         MAIN_PollInput(&playerA, &playerB);
         
         WORLD_Update(&world);
-        PLAYER_Update(&playerA, &world);
-        PLAYER_Update(&playerB, &world);
+        PLAYER_Update(&playerA, &playerB, &world);
+        PLAYER_Update(&playerB, &playerA, &world);
         
         RENDER_DrawFrame(&playerA, &playerB, &world, &frameA);
         RENDER_DrawFrame(&playerB, &playerA, &world, &frameB);

@@ -4,11 +4,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #define RENDER_FRAME_WIDTH 640
 #define RENDER_FRAME_HEIGHT 360
 
 #define RENDER_SPRITE_LIMIT 128
+
+#define RENDER_MAX_SCALE 4
 
 #include "vector.h"
 #include "world.h"
@@ -17,8 +20,8 @@
 struct _Player;
 
 struct _Sprite {
-    uint16_t x;
-    uint16_t y;
+    int16_t x;
+    int16_t y;
     uint8_t index;
     uint8_t size;
 };
