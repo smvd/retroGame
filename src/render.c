@@ -40,7 +40,7 @@ float RENDER_CastRay(struct _Vector source, struct _Vector ray, struct _Map * ma
     // The side of the grid square the ray has hit
     uint8_t side;
     float lastDistance = 0.0f;
-    
+        
     // Step along the ray until the grid square is marked as a wall
     while (1) {
         if (sideDistance.x < sideDistance.y) {
@@ -88,7 +88,7 @@ void RENDER_DrawWalls(struct _Player * player, struct _Map * map, struct _Frame 
         struct _Vector ray;
         ray.x = player->direction.x + camera.x * cameraPlaneFactor;
         ray.y = player->direction.y + camera.y * cameraPlaneFactor;
-        
+            
         float distance = RENDER_CastRay(player->position, ray, map, 255);
         
         if (distance < 0.75f) {
@@ -99,7 +99,23 @@ void RENDER_DrawWalls(struct _Player * player, struct _Map * map, struct _Frame 
     }
 }
 
-/*
+float RENDER_GetDistance(struct _Vector a, struct _Vector b) {
+    return sqrtf(powf(a.x - b.x, 2) + powf(a.y - b.y, 2));
+}
+
+uint16_t RENDER_GetScreenSpacePosition(struct _Player * player, struct _Vector camera, struct _Vector object) {
+    struct _Vector relative;
+    relative.x = object.x - player->position.x;
+    relative.y = object.y - player->position.y;
+    
+    float invDet = 1.0f / (camera.x * player->direction.y - player->direction.x * camera.y);
+    
+    struct _Vector transform;
+    transform.x = invDet * (player->direction.y * relative.x - player->direction.x * relative.y);
+    transform.y = invDet * (-camera.y * relative.x + camera.x * relative.y);
+    
+    return (uint16_t)((RENDER_FRAME_WIDTH / 2) * (1 + transform.x / transform.y));
+}
 
 void RENDER_DrawHud(struct _Player * player, struct _Frame * frame) {
         if (player->shooting) {
@@ -146,26 +162,6 @@ void RENDER_DrawEnemy(struct _Player * player, struct _Player * enemy, struct _F
     }
 }
 
-float RENDER_GetDistance(struct _Vector a, struct _Vector b) {
-    return sqrtf(powf(a.x - b.x, 2) + powf(a.y - b.y, 2));
-}
-
-uint16_t RENDER_GetScreenSpacePosition(struct _Player * player, struct _Vector camera, struct _Vector object) {
-    struct _Vector relative;
-    relative.x = object.x - player->position.x;
-    relative.y = object.y - player->position.y;
-    
-    float invDet = 1.0f / (camera.x * player->direction.y - player->direction.x * camera.y);
-    
-    struct _Vector transform;
-    transform.x = invDet * (player->direction.y * relative.x - player->direction.x * relative.y);
-    transform.y = invDet * (-camera.y * relative.x + camera.x * relative.y);
-    
-    return (uint16_t)((RENDER_FRAME_WIDTH / 2) * (1 + transform.x / transform.y));
-}
-
-*/
-
 void RENDER_DrawMenu(struct _Player * player, struct _Map * map, struct _Frame * frame) {
     RENDER_DrawWalls(player, map, frame);
 
@@ -187,5 +183,7 @@ void RENDER_DrawMenu(struct _Player * player, struct _Map * map, struct _Frame *
 }
 
 void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _Map * map, struct _Frame * frame) {
-    
+    RENDER_DrawWalls(player, map, frame);
+    RENDER_DrawEnemy(player, enemy, frame);
+    RENDER_DrawHud(player, frame);
 }

@@ -3,9 +3,9 @@
 #include <stdint.h>
 
 struct _Input {
-    uint8_t moveX;
-    uint8_t moveY;
-    uint8_t viewX;
+    int8_t moveX;
+    int8_t moveY;
+    int8_t viewX;
     uint8_t buttonState;
 };
 

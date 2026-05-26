@@ -20,6 +20,13 @@
 #define RENDER_TITLE_SPRITE_INDEX 7
 #define RENDER_BUTTON_SPRITE_INDEX 17
 
+#define RENDER_HEART_SPRITE_SIZE 16
+#define RENDER_HEART_SPRITE_OFFSET 10
+
+#define RENDER_MAX_SCALE 4
+#define RENDER_FLASH_OFFSET RENDER_SPRITE_SIZE*1.5
+#define RENDER_PLAYER_SPRITE_HIT_OFFSET 1
+
 struct _Sprite {
     int16_t x;
     int16_t y;
@@ -36,6 +43,8 @@ struct _Frame {
 
 void RENDER_DrawMenu(struct _Player * player, struct _Map * map, struct _Frame * frame);
 void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _Map * map, struct _Frame * frame);
+float RENDER_GetDistance(struct _Vector a, struct _Vector b);
+float RENDER_CastRay(struct _Vector source, struct _Vector ray, struct _Map * map, float maxDistance);
 
 /*
 #include <stdint.h>
@@ -46,15 +55,6 @@ void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _M
 
 
 
-#define RENDER_MAX_SCALE 4
-
-#define RENDER_FLASH_OFFSET RENDER_SPRITE_SIZE*1.5
-
-
-#define RENDER_HEART_SPRITE_SIZE 16
-#define RENDER_HEART_SPRITE_OFFSET 10
-
-#define RENDER_PLAYER_SPRITE_HIT_OFFSET 1
 
 #include "vector.h"
 #include "world.h"

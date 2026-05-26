@@ -190,8 +190,12 @@ int main() {
     struct _Frame frameA;
     struct _Frame frameB;
     
-    struct _Map * map;
-    
+    struct _Map * map = MAP_SelectRandom();
+    PLAYER_SetPosition(&playerA, map->playerPositionA, map->playerDirectionA);
+    PLAYER_SetPosition(&playerB, map->playerPositionB, map->playerDirectionB);
+    PLAYER_SetSpriteIndex(&playerA, 0);
+    PLAYER_SetSpriteIndex(&playerB, 2);
+
     enum _state state = STATE_MAIN_MENU;
     enum _state lastState = STATE_END_SCREEN;
     enum _state nextState = STATE_MAIN_MENU;
@@ -220,15 +224,19 @@ int main() {
             case STATE_PLAYING:
                 if (state != lastState) {
                     map = MAP_SelectRandom();
-    
                     PLAYER_SetPosition(&playerA, map->playerPositionA, map->playerDirectionA);
                     PLAYER_SetPosition(&playerB, map->playerPositionB, map->playerDirectionB);
                     PLAYER_ResetHealth(&playerA);
                     PLAYER_ResetHealth(&playerB);
                 }
                 
+                PLAYER_ApplyMovement(&playerA, map);
+                PLAYER_ApplyMovement(&playerB, map);
+                PLAYER_ApplyActions(&playerA, &playerB, map);
+                PLAYER_ApplyActions(&playerB, &playerA, map);
+                
                 RENDER_DrawFrame(&playerA, &playerB, map, &frameA);
-                RENDER_DrawFrame(&playerB, &playerA, map, &frameA);
+                RENDER_DrawFrame(&playerB, &playerA, map, &frameB);
                 
                 if (PLAYER_IsDead(&playerA) || PLAYER_IsDead(&playerB)) {
                     nextState = STATE_END_SCREEN;

@@ -2,27 +2,52 @@
 #define INCLUDED_PLAYER_HEADER
 
 #include <stdint.h>
+
 #include "vector.h"
 #include "input.h"
+#include "map.h"
+#include "bitwise.h"
 
 #define PLAYER_STARTING_HEALTH 3
+
+#define PLAYER_TURN_SPEED 0.0025
+#define PLAYER_MOVE_SPEED 0.005
+#define PLAYER_STRAFE_SPEED 0.005
+
+#define PLAYER_SHOOT_ANIMATION_LENGTH 200
+#define PLAYER_SHOOT_COOLDOWN 1000
+#define PLAYER_HIT_ANIMATION_LENGTH 400
+#define PLAYER_HIT_ANGLE 0.99
 
 struct _Player {
     struct _Vector position;
     struct _Vector direction;
     
     struct _Input input;
+
+    uint8_t shooting;
+    uint8_t shootingTimer;
+    
+    uint8_t hit;
+    uint8_t hitTimer;
+    
+    float enemyDistance;
+    uint8_t enemyVisible;
     
     uint8_t health;
     uint8_t ready;
+    
+    uint8_t spriteIndex;
 };
 
+void PLAYER_SetSpriteIndex(struct _Player * player, uint8_t spriteIndex);
 void PLAYER_SetReady(struct _Player * player, uint8_t state);
 uint8_t PLAYER_GetReady(struct _Player * player);
 void PLAYER_SetPosition(struct _Player * player, struct _Vector position, struct _Vector direction);
 void PLAYER_ResetHealth(struct _Player * player);
-void PLAYER_DecrementHealth(struct _Player * player);
 uint8_t PLAYER_IsDead(struct _Player * player);
+void PLAYER_ApplyMovement(struct _Player * player, struct _Map * map);
+void PLAYER_ApplyActions(struct _Player * player, struct _Player * enemy, struct _Map * map);
 
 /*
 #define INPUT_UP            (0x01 << 0)
@@ -33,13 +58,7 @@ uint8_t PLAYER_IsDead(struct _Player * player);
 #define INPUT_TURN_RIGHT    (0x01 << 5)
 #define INPUT_SHOOT         (0x01 << 6)
 
-#define PLAYER_TURN_SPEED 0.0025
-#define PLAYER_MOVE_SPEED 0.005
-#define PLAYER_STRAFE_SPEED 0.005
 
-#define PLAYER_SHOOT_ANIMATION_LENGTH 200
-#define PLAYER_SHOOT_COOLDOWN 1000
-#define PLAYER_HIT_ANIMATION_LENGTH 400
 
 #define PLAYER_HIT_ANGLE 0.99
 #define PLAYER_HEALTH 3
