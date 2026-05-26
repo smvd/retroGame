@@ -1,6 +1,35 @@
 #include "player.h"
 
-void PLAYER_Reset(struct _Player * player, struct _Vector position, struct _Vector direction) {
+void PLAYER_SetReady(struct _Player * player, uint8_t state) {
+    player->ready = (state == 1);
+}
+
+uint8_t PLAYER_GetReady(struct _Player * player) {
+    return player->ready;
+}
+
+void PLAYER_SetPosition(struct _Player * player, struct _Vector position, struct _Vector direction) {
+    player->position = position;
+    player->direction = direction;
+}
+
+void PLAYER_ResetHealth(struct _Player * player) {
+    player->health = PLAYER_STARTING_HEALTH;
+}
+
+void PLAYER_DecrementHealth(struct _Player * player) {
+    if (player->health >= 1) {
+        player->health -= 1;
+    }
+}
+
+uint8_t PLAYER_IsDead(struct _Player * player) {
+    return (player->health == 0);
+}
+
+/*
+
+void PLAYER_Reset(struct _Player * player, struct _Vector position, struct _Vector direction, uint8_t spriteIndex) {
     player->position = position;
     player->direction = direction;
     player->shooting = 0;
@@ -8,14 +37,23 @@ void PLAYER_Reset(struct _Player * player, struct _Vector position, struct _Vect
     player->health = PLAYER_HEALTH;
     player->hit = 0;
     player->hitTimer = 0;
-    
+    player->ready = 0;
     player->xMove = 0;
     player->yMove = 0; 
     player->turn = 0;
     player->shoot = 0;
+    player->lastShoot = 0;
+    player->spriteIndex = spriteIndex;
 }
 
-void PLAYER_Update(struct _Player * player, struct _Player * enemy, struct _World * world) {
+void PLAYER_UpdateMenu(struct _Player * player) {
+    if (player->shoot && player->lastShoot == 0) {
+        player->ready = !player->ready;
+    }
+    player->lastShoot = player->shoot;
+}
+
+void PLAYER_UpdatePlaying(struct _Player * player, struct _Player * enemy, struct _World * world) {
     struct _Vector enemyDirection;
     
     enemyDirection.x = enemy->position.x - player->position.x;
@@ -29,8 +67,11 @@ void PLAYER_Update(struct _Player * player, struct _Player * enemy, struct _Worl
     float directDistance = RENDER_GetDistance(player->position, enemy->position);
     float obstacleDistance = RENDER_CastRay(player->position, enemyDirection, world, directDistance+1.0f);
     
+    uint8_t pathClear = obstacleDistance >= directDistance;
+    float viewAlignment = player->direction.x * enemyDirection.x + player->direction.y * enemyDirection.y;
+
+    player->enemyVisible = pathClear && (viewAlignment > 0.7f);    
     player->enemyDistance = directDistance;
-    player->enemyVisible = obstacleDistance >= directDistance;
 
     float fx = player->xMove / 127.0f;
     float fy = player->yMove / 127.0f;
@@ -73,3 +114,4 @@ void PLAYER_Update(struct _Player * player, struct _Player * enemy, struct _Worl
     if (player->shootingTimer != 0) {player->shootingTimer -= 1;}
     if (player->hitTimer != 0) {player->hitTimer -= 1;}
 }
+*/
