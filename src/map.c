@@ -7,9 +7,37 @@ struct _Map maps[MAP_COUNT] = {
         0x87F3, 0x87E1, 0x8001, 0x8001, 
         0x9E11, 0x8011, 0x8011, 0xFFFF
     },(struct _Vector){2, 2},(struct _Vector){1, 0},
-      (struct _Vector){13, 14},(struct _Vector){-1, 0}}
+      (struct _Vector){13, 14},(struct _Vector){-1, 0}},
+    {{
+        0xFFFF, 0x8001, 0x8FFF, 0x8001, 
+        0xFFF1, 0x8001, 0x8FFF, 0x8001, 
+        0xFFF1, 0x8001, 0x8FFF, 0x8001, 
+        0xFFF1, 0x8001, 0x8001, 0xFFFF
+    },(struct _Vector){1.5, 1.5},(struct _Vector){1, 0},
+      (struct _Vector){12, 14},(struct _Vector){-1, 0}},
+    {{
+        0xFFFF, 0x8001, 0x87C1, 0x87C1, 
+        0x87C1, 0x8001, 0x8001, 0x8001, 
+        0x8001, 0x8001, 0x8001, 0x87C1, 
+        0x87C1, 0x87C1, 0x8001, 0xFFFF
+    },(struct _Vector){2, 2},(struct _Vector){1, 0},
+      (struct _Vector){14, 14},(struct _Vector){-1, 0}},
+    {{
+        0xFFFF, 0x8001, 0x8DB1, 0x8DB1, 
+        0x8DB1, 0x8DB1, 0x8DB1, 0x8DB1, 
+        0x8DB1, 0x8DB1, 0x8DB1, 0x8DB1, 
+        0x8DB1, 0x8DB1, 0x8001, 0xFFFF
+    },(struct _Vector){7, 1.5},(struct _Vector){1, 0},
+      (struct _Vector){7, 14.5},(struct _Vector){-1, 0}},
+    {{
+        0xFFFF, 0x8001, 0x8001, 0x8001, 
+        0x8001, 0xFFC1, 0xFFC1, 0xF81F, 
+        0xF81F, 0x83FF, 0x83FF, 0x8001, 
+        0x8001, 0x8001, 0x8001, 0xFFFF
+    },(struct _Vector){2, 2},(struct _Vector){1, 0},
+      (struct _Vector){13, 13},(struct _Vector){-1, 0}}
 };
 
-struct _Map * MAP_SelectRandom() {
-    return &maps[0];
+struct _Map * MAP_SelectRandom(uint8_t round) {
+    return &maps[round];
 }

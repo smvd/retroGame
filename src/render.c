@@ -117,30 +117,51 @@ uint16_t RENDER_GetScreenSpacePosition(struct _Player * player, struct _Vector c
     return (uint16_t)((RENDER_FRAME_WIDTH / 2) * (1 + transform.x / transform.y));
 }
 
-void RENDER_DrawHud(struct _Player * player, struct _Frame * frame) {
-        if (player->shooting) {
-            frame->sprites[frame->spriteCount].x = RENDER_FRAME_WIDTH/2-RENDER_SPRITE_SIZE*1.5;
-            frame->sprites[frame->spriteCount].y = RENDER_FRAME_HEIGHT-RENDER_SPRITE_SIZE*2.5;
-            frame->sprites[frame->spriteCount].size = 3;
-            frame->sprites[frame->spriteCount].index = RENDER_FLASH_SPRITE_INDEX;
-            frame->sprites[frame->spriteCount].centered = 0;
-            frame->spriteCount += 1;
-        }
-        
-        frame->sprites[frame->spriteCount].x = RENDER_FRAME_WIDTH/2-RENDER_SPRITE_SIZE/2;
-        frame->sprites[frame->spriteCount].y = RENDER_FRAME_HEIGHT-RENDER_SPRITE_SIZE;
-        frame->sprites[frame->spriteCount].size = 1;
-        frame->sprites[frame->spriteCount].index = RENDER_GUN_SPRITE_INDEX;
+void RENDER_DrawHud(struct _Player * player, struct _Frame * frame, uint8_t rounds[MAP_COUNT]) {
+    if (player->shooting) {
+        frame->sprites[frame->spriteCount].x = RENDER_FRAME_WIDTH/2-RENDER_SPRITE_SIZE*1.5;
+        frame->sprites[frame->spriteCount].y = RENDER_FRAME_HEIGHT-RENDER_SPRITE_SIZE*2.5;
+        frame->sprites[frame->spriteCount].size = 3;
+        frame->sprites[frame->spriteCount].index = RENDER_FLASH_SPRITE_INDEX;
         frame->sprites[frame->spriteCount].centered = 0;
         frame->spriteCount += 1;
+    }
+    
+    frame->sprites[frame->spriteCount].x = RENDER_FRAME_WIDTH/2-RENDER_SPRITE_SIZE/2;
+    frame->sprites[frame->spriteCount].y = RENDER_FRAME_HEIGHT-RENDER_SPRITE_SIZE;
+    frame->sprites[frame->spriteCount].size = 1;
+    frame->sprites[frame->spriteCount].index = RENDER_GUN_SPRITE_INDEX;
+    frame->sprites[frame->spriteCount].centered = 0;
+    frame->spriteCount += 1;
+    
+    for (uint8_t i = 0; i < player->health; i += 1) {
+        frame->sprites[frame->spriteCount].x = RENDER_HEART_SPRITE_OFFSET + i * RENDER_HEART_SPRITE_SIZE;
+        frame->sprites[frame->spriteCount].y = RENDER_HEART_SPRITE_OFFSET;
+        frame->sprites[frame->spriteCount].size = 1;
+        frame->sprites[frame->spriteCount].index = RENDER_HEART_SPRITE_INDEX;
+        frame->sprites[frame->spriteCount].centered = 0;
+        frame->spriteCount += 1;
+    }
         
-        for (uint8_t i = 0; i < player->health; i += 1) {
-            frame->sprites[frame->spriteCount].x = RENDER_HEART_SPRITE_OFFSET + i * RENDER_HEART_SPRITE_SIZE;
-            frame->sprites[frame->spriteCount].y = RENDER_HEART_SPRITE_OFFSET;
-            frame->sprites[frame->spriteCount].size = 1;
-            frame->sprites[frame->spriteCount].index = RENDER_HEART_SPRITE_INDEX;
-            frame->spriteCount += 1;
-        }
+    if (player->hit) {
+        frame->sprites[frame->spriteCount].x = RENDER_FRAME_WIDTH/2;
+        frame->sprites[frame->spriteCount].y = RENDER_FRAME_HEIGHT/2;
+        frame->sprites[frame->spriteCount].size = 4;
+        frame->sprites[frame->spriteCount].index = RENDER_BLOOD_SPRITE_INDEX;
+        frame->sprites[frame->spriteCount].centered = 1;
+        frame->spriteCount += 1;
+    }
+    
+    for (uint8_t i = 0; i < MAP_COUNT; i += 1) {
+        frame->sprites[frame->spriteCount].x = RENDER_FRAME_WIDTH - RENDER_SPRITE_SIZE * (MAP_COUNT - i);
+        frame->sprites[frame->spriteCount].y = 16;
+        frame->sprites[frame->spriteCount].size = 1;
+        if (rounds[i] == 0) {frame->sprites[frame->spriteCount].index = RENDER_NULL_CAN_SPRITE_INDEX;}
+        else if (rounds[i] == 1) {frame->sprites[frame->spriteCount].index = 0;}
+        else if (rounds[i] == 2) {frame->sprites[frame->spriteCount].index = 2;}
+        frame->sprites[frame->spriteCount].centered = 0;
+        frame->spriteCount += 1;
+    }
 }
 
 void RENDER_DrawEnemy(struct _Player * player, struct _Player * enemy, struct _Frame * frame) {
@@ -163,6 +184,7 @@ void RENDER_DrawEnemy(struct _Player * player, struct _Player * enemy, struct _F
 }
 
 void RENDER_DrawMenu(struct _Player * player, struct _Map * map, struct _Frame * frame) {
+    frame->spriteCount = 0;
     RENDER_DrawWalls(player, map, frame);
 
     for (int16_t i = 0; i < RENDER_TITLE_SPRITE_COUNT; i += 1) {
@@ -182,8 +204,9 @@ void RENDER_DrawMenu(struct _Player * player, struct _Map * map, struct _Frame *
     }
 }
 
-void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _Map * map, struct _Frame * frame) {
+void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _Map * map, struct _Frame * frame, uint8_t rounds[MAP_COUNT]) {
+    frame->spriteCount = 0;
     RENDER_DrawWalls(player, map, frame);
     RENDER_DrawEnemy(player, enemy, frame);
-    RENDER_DrawHud(player, frame);
+    RENDER_DrawHud(player, frame, rounds);
 }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <raylib.h>
+#include <string.h>
 
 #include "render.h"
 #include "map.h"
@@ -29,12 +30,14 @@
     20, button active 1
     21, button active 2
     22, button active 3
+    23, blood splash
+    24, null can
 */
 
 enum _state {
     STATE_MAIN_MENU = 0x01,
     STATE_PLAYING = 0x02,
-    STATE_END_SCREEN = 0x03
+    STATE_ROUND_END = 0x03
 };
 
 Texture2D textures[32];
@@ -42,6 +45,7 @@ RenderTexture2D screenA;
 RenderTexture2D screenB;
 
 uint8_t activePlayer = 0;
+float lastTriggerState = 0;
 
 void MAIN_InitVideo() {
     InitWindow(RENDER_FRAME_WIDTH*2, RENDER_FRAME_HEIGHT, "retro shiz");
@@ -50,7 +54,7 @@ void MAIN_InitVideo() {
     
     Image image;
     
-    for (uint8_t i = 0; i < 23; i += 1) {
+    for (uint8_t i = 0; i < 25; i += 1) {
         snprintf(buffer, 64, "%d.png", i);
 
         image = LoadImage(buffer);
@@ -72,20 +76,18 @@ void MAIN_UpdateFrame(struct _Frame * frame) {
     for (uint16_t x = 0; x < RENDER_FRAME_WIDTH; x += 1) {
         DrawRectangle(x, RENDER_FRAME_HEIGHT / 2 - frame->wallBuffer[x], 1, frame->wallBuffer[x] * 2, (Color){frame->wallBuffer[x], frame->wallBuffer[x], frame->wallBuffer[x], 255});
     }
-    
+        
     for (uint8_t i = 0; i < frame->spriteCount; i += 1) {
         int16_t spriteX = frame->sprites[i].x;
         int16_t spriteY = frame->sprites[i].y;
         
         if (frame->sprites[i].centered) {
-            spriteX -= RENDER_SPRITE_SIZE / 2;
-            spriteY -= RENDER_SPRITE_SIZE / 2;
+            spriteX -= RENDER_SPRITE_SIZE * (frame->sprites[i].size) / 2;
+            spriteY -= RENDER_SPRITE_SIZE * (frame->sprites[i].size) / 2;
         }
     
         DrawTextureEx(textures[frame->sprites[i].index], (Vector2){spriteX, spriteY},  0.0f, (float)frame->sprites[i].size, WHITE);
     }
-    
-    frame->spriteCount = 0;
 }
 
 void MAIN_UpdateFrames(struct _Frame * frameA, struct _Frame * frameB) {
@@ -116,39 +118,6 @@ void MAIN_UpdateFrames(struct _Frame * frameA, struct _Frame * frameB) {
         WHITE
     );
     EndDrawing();
-    
-    /*
-    FILE * file = fopen("data.bin", "wb");
-     
-    fwrite(frameA->wallBuffer, sizeof(int8_t), RENDER_FRAME_WIDTH, file);
-     
-    for (uint8_t i = 0; i < frameA->spriteCount; i += 1) {
-        uint16_t spriteX = frameA->sprites[i].x + 64;
-        uint16_t spriteY = frameA->sprites[i].y + 64;
-
-        if (frameA->sprites[i].centered) {
-            spriteX -= RENDER_SPRITE_SIZE / 2;
-            spriteY -= RENDER_SPRITE_SIZE / 2;
-        }
-        uint32_t packedSprite = 0;
-
-        packedSprite |= (uint32_t)(spriteX & 0x3FF) << 22;
-        packedSprite |= (uint32_t)(spriteY & 0x1FF) << 13;
-        packedSprite |= (uint32_t)(frameA->sprites[i].index & 0x1F) << 8;
-        packedSprite |= (uint32_t)(frameA->sprites[i].size & 0x07) << 5;
-        
-        fwrite(&packedSprite, sizeof(uint32_t), 1, file);
-    }
-    
-    if (frameA->spriteCount < 128) {
-        uint32_t zeroSprite = 0;
-        for (uint8_t i = frameA->spriteCount; i < 128; i++) {
-            fwrite(&zeroSprite, sizeof(uint32_t), 1, file);
-        }
-    }
-     
-    fclose(file);
-    */
 }
 
 void MAIN_PollInput(struct _Player * playerA, struct _Player * playerB) {
@@ -164,9 +133,13 @@ void MAIN_PollInput(struct _Player * playerA, struct _Player * playerB) {
         player = playerB;
     }
 
-    if (IsGamepadButtonPressed(0, GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) {
+    float triggerState = GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER);
+    
+    if (fabs(triggerState - lastTriggerState) > 0.5 && triggerState > 0.5) {
         player->input.buttonState = 1;
     }
+    
+    lastTriggerState = GetGamepadAxisMovement(0, GAMEPAD_AXIS_RIGHT_TRIGGER);
     
     float leftStickX = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_X);
     float leftStickY = GetGamepadAxisMovement(0, GAMEPAD_AXIS_LEFT_Y);
@@ -190,19 +163,22 @@ int main() {
     struct _Frame frameA;
     struct _Frame frameB;
     
-    struct _Map * map = MAP_SelectRandom();
+    struct _Map * map = MAP_SelectRandom(0);
     PLAYER_SetPosition(&playerA, map->playerPositionA, map->playerDirectionA);
     PLAYER_SetPosition(&playerB, map->playerPositionB, map->playerDirectionB);
     PLAYER_SetSpriteIndex(&playerA, 0);
     PLAYER_SetSpriteIndex(&playerB, 2);
 
     enum _state state = STATE_MAIN_MENU;
-    enum _state lastState = STATE_END_SCREEN;
+    enum _state lastState = STATE_ROUND_END;
     enum _state nextState = STATE_MAIN_MENU;
+    
+    uint8_t round = 0;
+    uint8_t rounds[MAP_COUNT] = {0};
     
     while (1) {
         MAIN_PollInput(&playerA, &playerB);
-    
+
         switch (state) {
             case STATE_MAIN_MENU:
                 if (state != lastState) {
@@ -223,7 +199,7 @@ int main() {
                 break;
             case STATE_PLAYING:
                 if (state != lastState) {
-                    map = MAP_SelectRandom();
+                    map = MAP_SelectRandom(round);
                     PLAYER_SetPosition(&playerA, map->playerPositionA, map->playerDirectionA);
                     PLAYER_SetPosition(&playerB, map->playerPositionB, map->playerDirectionB);
                     PLAYER_ResetHealth(&playerA);
@@ -235,17 +211,27 @@ int main() {
                 PLAYER_ApplyActions(&playerA, &playerB, map);
                 PLAYER_ApplyActions(&playerB, &playerA, map);
                 
-                RENDER_DrawFrame(&playerA, &playerB, map, &frameA);
-                RENDER_DrawFrame(&playerB, &playerA, map, &frameB);
+                RENDER_DrawFrame(&playerA, &playerB, map, &frameA, rounds);
+                RENDER_DrawFrame(&playerB, &playerA, map, &frameB, rounds);
                 
-                if (PLAYER_IsDead(&playerA) || PLAYER_IsDead(&playerB)) {
-                    nextState = STATE_END_SCREEN;
+                if (PLAYER_IsDead(&playerA)) {
+                    rounds[round] = 1;
+                    nextState = STATE_ROUND_END;
+                    round += 1;
+                } else if (PLAYER_IsDead(&playerB)) {
+                    rounds[round] = 2;
+                    nextState = STATE_ROUND_END;
+                    round += 1;
                 }
                 
                 break;
-            case STATE_END_SCREEN:
-                if (state != lastState) {
+            case STATE_ROUND_END:
+                if (round == MAP_COUNT) {
                     nextState = STATE_MAIN_MENU;
+                    round = 0;
+                    memset(rounds, 0, MAP_COUNT);
+                } else {
+                    nextState = STATE_PLAYING;
                 }
                 break;
         }

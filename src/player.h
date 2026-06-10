@@ -10,14 +10,14 @@
 
 #define PLAYER_STARTING_HEALTH 3
 
-#define PLAYER_TURN_SPEED 0.0025
-#define PLAYER_MOVE_SPEED 0.005
-#define PLAYER_STRAFE_SPEED 0.005
+#define PLAYER_TURN_SPEED 0.001
+#define PLAYER_MOVE_SPEED 0.0015
+#define PLAYER_STRAFE_SPEED 0.0015
 
 #define PLAYER_SHOOT_ANIMATION_LENGTH 200
 #define PLAYER_SHOOT_COOLDOWN 1000
 #define PLAYER_HIT_ANIMATION_LENGTH 400
-#define PLAYER_HIT_ANGLE 0.99
+#define PLAYER_HIT_ANGLE 0.98
 
 struct _Player {
     struct _Vector position;
@@ -26,10 +26,10 @@ struct _Player {
     struct _Input input;
 
     uint8_t shooting;
-    uint8_t shootingTimer;
+    uint16_t shootingTimer;
     
     uint8_t hit;
-    uint8_t hitTimer;
+    uint16_t hitTimer;
     
     float enemyDistance;
     uint8_t enemyVisible;

@@ -19,6 +19,9 @@
 #define RENDER_HEART_SPRITE_INDEX 6
 #define RENDER_TITLE_SPRITE_INDEX 7
 #define RENDER_BUTTON_SPRITE_INDEX 17
+#define RENDER_BLOOD_SPRITE_INDEX 23
+
+#define RENDER_NULL_CAN_SPRITE_INDEX 24
 
 #define RENDER_HEART_SPRITE_SIZE 16
 #define RENDER_HEART_SPRITE_OFFSET 10
@@ -42,36 +45,8 @@ struct _Frame {
 };
 
 void RENDER_DrawMenu(struct _Player * player, struct _Map * map, struct _Frame * frame);
-void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _Map * map, struct _Frame * frame);
+void RENDER_DrawFrame(struct _Player * player, struct _Player * enemy, struct _Map * map, struct _Frame * frame, uint8_t rounds[MAP_COUNT]);
 float RENDER_GetDistance(struct _Vector a, struct _Vector b);
 float RENDER_CastRay(struct _Vector source, struct _Vector ray, struct _Map * map, float maxDistance);
-
-/*
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-
-
-
-
-
-#include "vector.h"
-#include "world.h"
-#include "player.h"
-
-struct _Player;
-
-void RENDER_DrawWalls(struct _Player * player, struct _World * world, struct _Frame * frame);
-
-uint16_t RENDER_GetScreenSpacePosition(struct _Player * player, struct _Vector camera, struct _Vector object);
-float RENDER_CastRay(struct _Vector source, struct _Vector ray, struct _World * world, float maxDistance);
-float RENDER_GetDistance(struct _Vector a, struct _Vector b);
-
-void RENDER_DrawMenu(struct _Player * player, struct _Frame * frame);
-void RENDER_DrawWalls(struct _Player * player, struct _World * world, struct _Frame * frame);
-void RENDER_DrawHud(struct _Player * player, struct _Frame * frame);
-void RENDER_DrawEnemy(struct _Player * player, struct _Player * enemy, struct _Frame * frame);
-*/
 
 #endif

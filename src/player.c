@@ -72,7 +72,7 @@ void PLAYER_ApplyActions(struct _Player * player, struct _Player * enemy, struct
         player->shootingTimer = PLAYER_SHOOT_ANIMATION_LENGTH;
         
         float dotProduct = player->direction.x * enemyDirection.x + player->direction.y * enemyDirection.y;
-        if (dotProduct > PLAYER_HIT_ANGLE) {
+        if (dotProduct > PLAYER_HIT_ANGLE && player->enemyVisible) {
             enemy->hit = 1;
             enemy->hitTimer = PLAYER_HIT_ANIMATION_LENGTH;
             enemy->health -= 1;

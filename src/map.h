@@ -5,7 +5,7 @@
 
 #define MAP_WIDTH 16
 #define MAP_HEIGHT 16
-#define MAP_COUNT 1
+#define MAP_COUNT 5
 
 struct _Map {
     uint16_t tiles[MAP_HEIGHT];
@@ -15,6 +15,6 @@ struct _Map {
     struct _Vector playerDirectionB;
 };
 
-struct _Map * MAP_SelectRandom();
+struct _Map * MAP_SelectRandom(uint8_t round);
 
 #endif
